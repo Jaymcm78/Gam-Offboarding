@@ -23,7 +23,7 @@ start_log() {
     echo "$(whoami) conducting offboarding for $user on $(date)"
 }
 
-# Find who the users manager was
+# Find who the users manager was
 identify_manager(){
     printf "\nFinding the manager of the $user..."
     manager=$($gam user $user print fields relations | grep manager | cut -d "," -f4)
@@ -36,7 +36,7 @@ move_ou() {
     $gam update user $user ou Past\ Employees
 }
 
-# Change the users password to something random
+# Change the users password to something random
 change_password() {
     printf "\nResetting $user password to something random...\n"
     $gam update user $user password random
@@ -57,18 +57,18 @@ transfer_files_to_manager () {
     esac
 } 
 
-# Delete application specific passwords, backup verification codes, access tokens
+# Delete application specific passwords, backup verification codes, access tokens
 # disable POP and IMAP access, sign user out and lastly turn off 2-Step verification
 deprovision_user(){
     printf "\nDeprovisioning $user...\n"
     # We have to unsuspend the user first to allow us to turn off 2SV
     $gam update user $user suspended off 
     $gam user $user deprovision popimap signout turnoff2sv
-    # Re-suspend the user after deprovisioning completed
+    # Re-suspend the user after deprovisioning completed
     $gam update user $user suspended off 
 }
 
-# Wipe company user data from mobile devices
+# Wipe company user data from mobile devices
 wipe_mobile_devices() {
     printf "\nWiping company user data from connected mobile devices...\n"
     $gam print mobile query "email:$user" > /tmp/$user-devices.csv
@@ -90,6 +90,7 @@ remove_from_directory() {
     $gam update user $user gal false
 }
 
+
 # Archive the user and update licences to reflect
 archive_user() {
     printf "\nArchiving $user...\n"
@@ -97,8 +98,14 @@ archive_user() {
     # We have to manually remove the user licence and then apply an archived licence
     printf "\nUpdating licence to an archive licence...\n"
     $gam user $user delete licence gau # gau = [SKU] Google-Apps-Unlimted (G Suite Business)
-    $gam user $user add licence gsbau # gsbau = [SKU] 101034002 (G Suite Business Archived)
+    $gam user $user add licence gsbau # gsbau = [SKU] 101034002 (G Suite Business Archived)
 }
+
+# Suspend user account
+suspend_user() {
+    $gam update user $user suspended on
+}
+
 
 # Run all functions of the script, comment a function out here if you wish to not perform a particular step
 email_verification
@@ -111,4 +118,5 @@ deprovision_user
 wipe_mobile_devices
 remove_groups
 remove_from_directory
-archive_user
+#archive_user
+suspend_user
